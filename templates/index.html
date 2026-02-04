@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog to Instagram Converter with AI Image Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .settings-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .settings-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .input-section h2, .output-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+        }
+
+        .post-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .post-preview h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .hashtag {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 10px 0;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #f8f9fa 25%, #e9ecef 25%, #e9ecef 50%, #f8f9fa 50%, #f8f9fa 75%, #e9ecef 75%, #e9ecef);
+            background-size: 40px 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .api-key-note {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .controls button {
+            flex: 1;
+        }
+
+        /* Pinterest Styles */
+        .pin-strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .pin-card {
+            background: linear-gradient(135deg, #E60023 0%, #bd081c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .pin-card.type-title { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .pin-card.type-list { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); }
+        .pin-card.type-howto { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); }
+        .pin-card.type-quote { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .pin-card.type-statistic { background: linear-gradient(135deg, #ffd93d 0%, #ff9d00 100%); color: #333; }
+
+        .pin-card h4 {
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .pin-card h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .pin-card .key-points {
+            text-align: left;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+
+        .pin-card .key-points li {
+            margin: 5px 0;
+            opacity: 0.95;
+        }
+
+        .pin-card .cta {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .keywords-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .keyword-tag {
+            background: #E60023;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .board-suggestion {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #E60023;
+        }
+
+        .pin-description-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .pin-description-box h5 {
+            color: #E60023;
+            margin-bottom: 8px;
+        }
+
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Blog Creator Styles */
+        .blog-creator-section {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .blog-creator-section .card {
+            margin-bottom: 20px;
+        }
+
+        .radio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            background: #f8f9fa;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .radio-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+            color: #667eea;
+        }
+
+        .radio-option span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .seo-title-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .seo-title-option {
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .seo-title-option:hover {
+            border-color: #667eea;
+            background: rgba(102,126,234,0.05);
+        }
+
+        .seo-title-option.selected {
+            border-color: #667eea;
+            background: rgba(102,126,234,0.1);
+        }
+
+        .blog-preview {
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 20px;
+            color: #f1f5f9;
+            font-family: 'Courier New', monospace;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .blog-preview h1, .blog-preview h2, .blog-preview h3 {
+            color: #38bdf8;
+            margin: 15px 0 10px;
+        }
+
+        .blog-preview p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .blog-preview ul, .blog-preview ol {
+            margin-left: 20px;
+        }
+
+        .hugo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e1e1;
+        }
+
+        .hugo-controls .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-indicator.running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-indicator.stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+
+        .tags-input .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .tags-input .tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tags-input input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            padding: 5px;
+        }
+
+        /* Image Upload Styles */
+        .image-upload-area {
+            border: 2px dashed #e1e1e1;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .image-upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .image-upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+    </style>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Social Media Converter</h1>
+            <p>Transform blog posts into scroll-stopping social media content with AI</p>
+            <div class="header-actions">
+                <a class="settings-link" href="/settings">⚙️ Settings</a>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('social')">📱 Social Media Converter</button>
+        </div>
+
+        <div class="alert" id="alert"></div>
+
+        <!-- Social Media Converter Tab -->
+        <div class="tab-content active" id="socialTab">
+            <div class="main-content">
+                <div class="card input-section">
+                    <h2>🔗 Input Settings</h2>
+
+                    <div class="form-group">
+                        <label for="blogUrl">Blog URL:</label>
+                        <input type="text" id="blogUrl" placeholder="https://example.com/blog-post">
+                </div>
+
+                <div class="form-group">
+                    <label for="platform">Platform:</label>
+                    <select id="platform" onchange="updatePlatformUI()">
+                        <option value="instagram">📸 Instagram</option>
+                        <option value="facebook">📘 Facebook</option>
+                        <option value="pinterest">📌 Pinterest</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="display: none;">
+                    <label for="deepseekKey">DeepSeek API Key:</label>
+                    <input type="text" id="deepseekKey" placeholder="Enter your DeepSeek API key">
+                    <div class="api-key-note">Keys are loaded from .env file</div>
+                </div>
+
+                <div class="form-group" style="display: none;">
+                    <label for="deepaiKey">DeepAI API Key:</label>
+                    <input type="text" id="deepaiKey" placeholder="Enter your DeepAI API key (optional)">
+                    <div class="api-key-note">Keys are loaded from .env file</div>
+                </div>
+
+                <div class="toggle-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="autoGenerateImage">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Automatically generate image with DeepAI</span>
+                </div>
+
+                <button class="btn" id="generateBtn" onclick="generatePost()">
+                    ✨ Generate Social Media Post
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Generating your post...</p>
+                </div>
+
+                <div class="note">
+                    <strong>How it works:</strong>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Extracts content from the blog URL</li>
+                        <li>Generates platform-specific post using DeepSeek AI</li>
+                        <li>Creates optimized image prompt</li>
+                        <li>Optionally generates image using DeepAI</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card output-section">
+                <h2 id="outputTitle">📸 Generated Content</h2>
+                <div id="output">
+                    <p style="color: #666; text-align: center; padding: 40px;">
+                        Your generated post will appear here
+                    </p>
+                </div>
+
+                <!-- Instagram Results -->
+                <div class="result" id="instagramResult" style="display: none;">
+                    <div class="post-preview">
+                        <h3>📝 Instagram Caption</h3>
+                        <textarea id="captionOutput" readonly rows="6"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('captionOutput')">
+                                📋 Copy Caption
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🏷️ Hashtags</h3>
+                        <div class="hashtags" id="hashtagsOutput"></div>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyHashtags()">
+                                📋 Copy Hashtags
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🎨 Image Prompt</h3>
+                        <textarea id="imagePrompt" readonly rows="4"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('imagePrompt')">
+                                📋 Copy Prompt
+                            </button>
+                            <button class="btn btn-warning" id="generateImageBtn" onclick="generateImage()">
+                                🖼️ Generate Image
+                            </button>
+                        </div>
+
+                        <div id="imageResult" class="image-preview" style="display: none;">
+                            <h3 style="margin-top: 20px;">🖼️ Generated Image</h3>
+                            <img id="generatedImage" class="generated-image" alt="AI Generated Image">
+                            <div class="controls">
+                                <button class="btn btn-success" onclick="downloadImage()">
+                                    ⬇️ Download Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="imagePlaceholder" class="image-placeholder">
+                            Click "Generate Image" to create an AI image
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facebook Results -->
+                <div class="result" id="facebookResult" style="display: none;">
+                    <div class="post-preview">
+                        <h3>📘 Complete Facebook Post</h3>
+                        <textarea id="fbFullPost" readonly rows="12" style="height: 300px;"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbFullPost')">
+                                📋 Copy Full Post
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🎯 Part 1: Hook (Attention Grabber)</h3>
+                        <textarea id="fbHook" readonly rows="3"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbHook')">
+                                📋 Copy Hook
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>💬 Part 2: Body (Emotional Content)</h3>
+                        <textarea id="fbBody" readonly rows="8"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbBody')">
+                                📋 Copy Body
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🔗 Part 3: Call-to-Action</h3>
+                        <textarea id="fbCta" readonly rows="3"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbCta')">
+                                📋 Copy CTA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>💭 Part 4: Engagement Prompt</h3>
+                        <textarea id="fbEngagement" readonly rows="3"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbEngagement')">
+                                📋 Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🎨 Part 5: Visual Ideas</h3>
+                        <textarea id="fbVisuals" readonly rows="6"></textarea>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🖼️ Image Prompt</h3>
+                        <textarea id="fbImagePrompt" readonly rows="3"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('fbImagePrompt')">
+                                📋 Copy Prompt
+                            </button>
+                            <button class="btn btn-warning" id="generateImageBtnFb" onclick="generateImage()">
+                                🖼️ Generate Image
+                            </button>
+                        </div>
+
+                        <div id="fbImageResult" class="image-preview" style="display: none;">
+                            <h3 style="margin-top: 20px;">🖼️ Generated Image</h3>
+                            <img id="fbGeneratedImage" class="generated-image" alt="AI Generated Image">
+                            <div class="controls">
+                                <button class="btn btn-success" onclick="downloadImage()">
+                                    ⬇️ Download Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="fbImagePlaceholder" class="image-placeholder">
+                            Click "Generate Image" to create an AI image
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pinterest Results -->
+                <div class="result" id="pinterestResult" style="display: none;">
+                    <div class="post-preview">
+                        <h3>📝 Content Summary</h3>
+                        <p id="pinSummary"></p>
+                        <div style="margin-top: 10px;">
+                            <strong>🎯 Target Audience:</strong> <span id="pinAudience"></span>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🔑 Pinterest Keywords</h3>
+                        <div class="keywords-container" id="pinKeywords"></div>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyPinterestKeywords()">
+                                📋 Copy Keywords
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>📋 Board Suggestions</h3>
+                        <div id="pinBoards"></div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>📌 Pin Strategies (<span id="pinCount">0</span> pins)</h3>
+                        <div class="pin-strategy-grid" id="pinStrategies"></div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>📄 Pin Descriptions</h3>
+                        <div id="pinDescriptions"></div>
+                    </div>
+
+                    <div class="post-preview">
+                        <h3>🖼️ Image Style</h3>
+                        <textarea id="pinImagePrompt" readonly rows="3"></textarea>
+                        <div class="controls">
+                            <button class="copy-btn" onclick="copyToClipboard('pinImagePrompt')">
+                                📋 Copy Prompt
+                            </button>
+                            <button class="btn btn-warning" id="generateImageBtnPin" onclick="generateImage()">
+                                🖼️ Generate Image
+                            </button>
+                        </div>
+
+                        <div id="pinImageResult" class="image-preview" style="display: none;">
+                            <h3 style="margin-top: 20px;">🖼️ Generated Image</h3>
+                            <img id="pinGeneratedImage" class="generated-image" alt="AI Generated Image">
+                            <div class="controls">
+                                <button class="btn btn-success" onclick="downloadImage()">
+                                    ⬇️ Download Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="pinImagePlaceholder" class="image-placeholder">
+                            Click "Generate Image" to create a Pinterest-style graphic
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div> <!-- End socialTab -->
+
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            apiBaseUrl: window.location.origin
+        };
+
+        // State
+        let currentImageData = null;
+        let currentPlatform = 'instagram';
+
+        // Utility Functions
+        function showAlert(message, type = 'success', duration = 5000) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, duration);
+        }
+
+        function showLoading(text = 'Generating your post...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        function updatePlatformUI() {
+            currentPlatform = document.getElementById('platform').value;
+            const title = document.getElementById('outputTitle');
+            
+            if (currentPlatform === 'facebook') {
+                title.textContent = '📘 Generated Facebook Post';
+            } else if (currentPlatform === 'pinterest') {
+                title.textContent = '📌 Generated Pinterest Pins';
+            } else {
+                title.textContent = '📸 Generated Instagram Post';
+            }
+            
+            // Hide all results when switching
+            document.getElementById('instagramResult').style.display = 'none';
+            document.getElementById('facebookResult').style.display = 'none';
+            document.getElementById('pinterestResult').style.display = 'none';
+            document.getElementById('output').style.display = 'block';
+        }
+
+        // Main Functions
+        async function generatePost() {
+            const url = document.getElementById('blogUrl').value;
+            const platform = document.getElementById('platform').value;
+            const deepseekKey = document.getElementById('deepseekKey').value;
+            const deepaiKey = document.getElementById('deepaiKey').value;
+            const autoGenerateImage = document.getElementById('autoGenerateImage').checked;
+
+            // Validation
+            if (!url) {
+                showAlert('Please enter a blog URL', 'error');
+                return;
+            }
+
+            const platformName = platform === 'facebook' ? 'Facebook' : (platform === 'pinterest' ? 'Pinterest' : 'Instagram');
+            showLoading(autoGenerateImage ?
+                `Generating ${platformName} post and creating image...` :
+                `Generating your ${platformName} post...`);
+
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/api/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        platform: platform,
+                        deepseek_key: deepseekKey,
+                        deepai_key: deepaiKey,
+                        generate_image: autoGenerateImage
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data);
+                    showAlert(`${platformName} post generated successfully!`);
+
+                    // If auto-generated image was created, show it
+                    if (data.image_generation && data.image_generation.success) {
+                        displayGeneratedImage(data.image_generation);
+                    }
+                } else {
+                    showAlert(data.error || 'An error occurred', 'error');
+                }
+
+            } catch (error) {
+                showAlert('Error connecting to server: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function generateImage() {
+            // Get prompt from Instagram, Facebook, or Pinterest section
+            let prompt = '';
+            if (currentPlatform === 'facebook') {
+                prompt = document.getElementById('fbImagePrompt').value;
+            } else if (currentPlatform === 'pinterest') {
+                prompt = document.getElementById('pinImagePrompt').value;
+            } else {
+                prompt = document.getElementById('imagePrompt').value;
+            }
+            const deepaiKey = document.getElementById('deepaiKey').value;
+
+            if (!prompt) {
+                showAlert('Please generate a post first to get an image prompt', 'error');
+                return;
+            }
+
+            // Disable generate image buttons and show loading
+            const igBtn = document.getElementById('generateImageBtn');
+            const fbBtn = document.getElementById('generateImageBtnFb');
+            const pinBtn = document.getElementById('generateImageBtnPin');
+            if (igBtn) { igBtn.disabled = true; igBtn.textContent = 'Generating...'; }
+            if (fbBtn) { fbBtn.disabled = true; fbBtn.textContent = 'Generating...'; }
+            if (pinBtn) { pinBtn.disabled = true; pinBtn.textContent = 'Generating...'; }
+            showAlert('Generating image... This may take a moment.', 'info', 10000);
+
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/api/generate_image`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        deepai_key: deepaiKey
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayGeneratedImage(data);
+                    showAlert('Image generated successfully!');
+                } else {
+                        console.error('Generate image response:', data);
+                        const msg = data.error || (typeof data === 'object' ? JSON.stringify(data) : String(data)) || 'Failed to generate image';
+                        showAlert(msg, 'error');
+                }
+
+            } catch (error) {
+                showAlert('Error generating image: ' + error.message, 'error');
+            } finally {
+                // Restore generate image buttons
+                if (igBtn) { igBtn.disabled = false; igBtn.textContent = '🖼️ Generate Image'; }
+                if (fbBtn) { fbBtn.disabled = false; fbBtn.textContent = '🖼️ Generate Image'; }
+                if (pinBtn) { pinBtn.disabled = false; pinBtn.textContent = '🖼️ Generate Image'; }
+            }
+        }
+
+        function displayResults(data) {
+            const platform = data.platform || 'instagram';
+            currentPlatform = platform;
+            
+            document.getElementById('output').style.display = 'none';
+            
+            if (platform === 'facebook') {
+                // Hide others, show Facebook
+                document.getElementById('instagramResult').style.display = 'none';
+                document.getElementById('pinterestResult').style.display = 'none';
+                document.getElementById('facebookResult').style.display = 'block';
+                
+                const post = data.post_content || data.facebook_post || {};
+                
+                // Full post
+                document.getElementById('fbFullPost').value = post.full_post || 
+                    [post.hook, post.body, post.cta, post.engagement_prompt].filter(Boolean).join('\n\n') ||
+                    'No post generated';
+                
+                // Hook
+                document.getElementById('fbHook').value = post.hook || '';
+                
+                // Body
+                document.getElementById('fbBody').value = post.body || '';
+                
+                // CTA
+                document.getElementById('fbCta').value = post.cta || '';
+                
+                // Engagement prompt
+                document.getElementById('fbEngagement').value = post.engagement_prompt || '';
+                
+                // Visuals guide
+                document.getElementById('fbVisuals').value = post.visuals_guide || '';
+                
+                // Image prompt
+                document.getElementById('fbImagePrompt').value = 
+                    data.image_prompt_short || data.image_prompt || 'No image prompt generated';
+                
+                // Reset image display
+                document.getElementById('fbImageResult').style.display = 'none';
+                document.getElementById('fbImagePlaceholder').style.display = 'block';
+                
+            } else if (platform === 'pinterest') {
+                // Hide others, show Pinterest
+                document.getElementById('instagramResult').style.display = 'none';
+                document.getElementById('facebookResult').style.display = 'none';
+                document.getElementById('pinterestResult').style.display = 'block';
+                
+                const post = data.post_content || data.pinterest_post || {};
+                
+                // Summary and audience
+                document.getElementById('pinSummary').textContent = post.summary || 'No summary generated';
+                document.getElementById('pinAudience').textContent = post.targetAudience || 'General audience';
+                
+                // Keywords
+                const keywordsContainer = document.getElementById('pinKeywords');
+                keywordsContainer.innerHTML = '';
+                const keywords = post.pinterestKeywords || [];
+                keywords.forEach(keyword => {
+                    const tag = document.createElement('span');
+                    tag.className = 'keyword-tag';
+                    tag.textContent = keyword;
+                    keywordsContainer.appendChild(tag);
+                });
+                
+                // Board suggestions
+                const boardsContainer = document.getElementById('pinBoards');
+                boardsContainer.innerHTML = '';
+                const boards = post.boardSuggestions || [];
+                boards.forEach(board => {
+                    const div = document.createElement('div');
+                    div.className = 'board-suggestion';
+                    div.textContent = '📋 ' + board;
+                    boardsContainer.appendChild(div);
+                });
+                
+                // Pin strategies
+                const strategies = post.pinStrategies || [];
+                document.getElementById('pinCount').textContent = strategies.length;
+                const strategiesContainer = document.getElementById('pinStrategies');
+                strategiesContainer.innerHTML = '';
+                
+                strategies.forEach((strategy, index) => {
+                    const card = document.createElement('div');
+                    card.className = `pin-card type-${strategy.type}`;
+                    
+                    const keyPointsHtml = (strategy.keyPoints || [])
+                        .map(point => `<li>${point}</li>`)
+                        .join('');
+                    
+                    card.innerHTML = `
+                        <h4>Pin ${index + 1}: ${strategy.type}</h4>
+                        <h3>${strategy.pinTitle || strategy.focus}</h3>
+                        <ul class="key-points">${keyPointsHtml}</ul>
+                        <span class="cta">${strategy.callToAction || 'Read More →'}</span>
+                    `;
+                    strategiesContainer.appendChild(card);
+                });
+                
+                // Pin descriptions
+                const descriptionsContainer = document.getElementById('pinDescriptions');
+                descriptionsContainer.innerHTML = '';
+                strategies.forEach((strategy, index) => {
+                    if (strategy.pinDescription) {
+                        const box = document.createElement('div');
+                        box.className = 'pin-description-box';
+                        box.innerHTML = `
+                            <h5>Pin ${index + 1}: ${strategy.pinTitle || strategy.type}</h5>
+                            <p>${strategy.pinDescription}</p>
+                            <button class="copy-btn" onclick="copyPinDescription(${index})">📋 Copy</button>
+                        `;
+                        box.dataset.description = strategy.pinDescription;
+                        descriptionsContainer.appendChild(box);
+                    }
+                });
+                
+                // Image prompt
+                document.getElementById('pinImagePrompt').value = 
+                    data.image_prompt_short || data.image_prompt || post.image_description || 'No image prompt generated';
+                
+                // Reset image display
+                document.getElementById('pinImageResult').style.display = 'none';
+                document.getElementById('pinImagePlaceholder').style.display = 'block';
+                
+            } else {
+                // Hide others, show Instagram
+                document.getElementById('facebookResult').style.display = 'none';
+                document.getElementById('pinterestResult').style.display = 'none';
+                document.getElementById('instagramResult').style.display = 'block';
+                
+                const post = data.post_content || data.instagram_post || {};
+                
+                // Display caption
+                document.getElementById('captionOutput').value = post.caption || 'No caption generated';
+
+                // Display hashtags
+                const hashtags = post.hashtags || [];
+                const hashtagsOutput = document.getElementById('hashtagsOutput');
+                hashtagsOutput.innerHTML = '';
+                hashtags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'hashtag';
+                    span.textContent = tag;
+                    hashtagsOutput.appendChild(span);
+                });
+
+                // Display short image prompt (one-line) if available, else full prompt
+                document.getElementById('imagePrompt').value =
+                    data.image_prompt_short || data.image_prompt || 'No image prompt generated';
+
+                // Reset image display
+                document.getElementById('imageResult').style.display = 'none';
+                document.getElementById('imagePlaceholder').style.display = 'block';
+            }
+            
+            currentImageData = null;
+
+            // Enable generate image button if prompt exists
+            const igBtn = document.getElementById('generateImageBtn');
+            const fbBtn = document.getElementById('generateImageBtnFb');
+            const pinBtn = document.getElementById('generateImageBtnPin');
+            if (igBtn) igBtn.disabled = !data.image_prompt;
+            if (fbBtn) fbBtn.disabled = !data.image_prompt;
+            if (pinBtn) pinBtn.disabled = !data.image_prompt;
+        }
+
+        function displayGeneratedImage(imageData) {
+            currentImageData = imageData;
+            
+            const imgSrc = imageData.image_base64 
+                ? `data:image/png;base64,${imageData.image_base64}`
+                : imageData.image_url;
+
+            if (currentPlatform === 'facebook') {
+                document.getElementById('fbGeneratedImage').src = imgSrc;
+                document.getElementById('fbImagePlaceholder').style.display = 'none';
+                document.getElementById('fbImageResult').style.display = 'block';
+            } else if (currentPlatform === 'pinterest') {
+                document.getElementById('pinGeneratedImage').src = imgSrc;
+                document.getElementById('pinImagePlaceholder').style.display = 'none';
+                document.getElementById('pinImageResult').style.display = 'block';
+            } else {
+                document.getElementById('generatedImage').src = imgSrc;
+                document.getElementById('imagePlaceholder').style.display = 'none';
+                document.getElementById('imageResult').style.display = 'block';
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+                element.select();
+            } else {
+                const range = document.createRange();
+                range.selectNode(element);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            }
+
+            navigator.clipboard.writeText(element.value || element.textContent)
+                .then(() => showAlert('Copied to clipboard!'))
+                .catch(err => showAlert('Failed to copy: ' + err, 'error'));
+        }
+
+        function copyHashtags() {
+            const hashtagsOutput = document.getElementById('hashtagsOutput');
+            const hashtags = Array.from(hashtagsOutput.querySelectorAll('.hashtag'))
+                .map(tag => tag.textContent)
+                .join(' ');
+
+            navigator.clipboard.writeText(hashtags)
+                .then(() => showAlert('Hashtags copied to clipboard!'))
+                .catch(err => showAlert('Failed to copy: ' + err, 'error'));
+        }
+
+        function copyPinterestKeywords() {
+            const keywordsContainer = document.getElementById('pinKeywords');
+            const keywords = Array.from(keywordsContainer.querySelectorAll('.keyword-tag'))
+                .map(tag => tag.textContent)
+                .join(', ');
+
+            navigator.clipboard.writeText(keywords)
+                .then(() => showAlert('Pinterest keywords copied to clipboard!'))
+                .catch(err => showAlert('Failed to copy: ' + err, 'error'));
+        }
+
+        function copyPinDescription(index) {
+            const boxes = document.querySelectorAll('.pin-description-box');
+            if (boxes[index]) {
+                const description = boxes[index].dataset.description;
+                navigator.clipboard.writeText(description)
+                    .then(() => showAlert('Pin description copied to clipboard!'))
+                    .catch(err => showAlert('Failed to copy: ' + err, 'error'));
+            }
+        }
+
+        function downloadImage() {
+            if (!currentImageData) {
+                showAlert('No image to download', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            let filename = 'instagram-post-image';
+            if (currentPlatform === 'facebook') {
+                filename = 'facebook-post-image';
+            } else if (currentPlatform === 'pinterest') {
+                filename = 'pinterest-pin-image';
+            }
+
+            if (currentImageData.image_base64) {
+                link.href = `data:image/png;base64,${currentImageData.image_base64}`;
+                link.download = `${filename}.png`;
+            } else if (currentImageData.image_url) {
+                link.href = currentImageData.image_url;
+                link.download = `${filename}.jpg`;
+            } else {
+                showAlert('No image data available', 'error');
+                return;
+            }
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showAlert('Image download started!');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePlatformUI();
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 30px 20px; margin-top: 40px; color: rgba(255,255,255,0.8); font-size: 14px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <p style="margin-bottom: 10px;">
+                <strong>Social Media Converter</strong> by 
+                <a href="https://joshuagoth.com" target="_blank" style="color: white; text-decoration: underline;">Joshua Goth</a>
+            </p>
+            <p style="margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="https://github.com/JoshuaMGoth/blog-to-social-media-converter" target="_blank" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                    <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 5px;">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    GitHub
+                </a>
+                <a href="mailto:me@joshuagoth.com" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                    ✉️ me@joshuagoth.com
+                </a>
+                <a href="https://joshuagoth.com" target="_blank" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                    🌐 joshuagoth.com
+                </a>
+            </p>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.6);">
+                Open source under the MIT License • Made with ❤️
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

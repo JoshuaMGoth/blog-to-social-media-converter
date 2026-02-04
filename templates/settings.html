@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - API Keys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 16px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .alert {
+            background: #e6ffed;
+            border: 1px solid #b7ebc6;
+            color: #1b7f39;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Settings</h1>
+            <p><a href="/">← Back to App</a></p>
+        </div>
+
+        {% if saved %}
+        <div class="alert">Settings saved.</div>
+        {% endif %}
+
+        <form method="POST" action="/settings">
+            <div class="card">
+                <h2>Text AI Providers</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="deepseek_api_key">DeepSeek API Key</label>
+                        <input type="password" id="deepseek_api_key" name="deepseek_api_key" value="{{ settings.text_ai.deepseek }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="openai_api_key">OpenAI API Key</label>
+                        <input type="password" id="openai_api_key" name="openai_api_key" value="{{ settings.text_ai.openai }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="anthropic_api_key">Anthropic API Key</label>
+                        <input type="password" id="anthropic_api_key" name="anthropic_api_key" value="{{ settings.text_ai.anthropic }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="google_gemini_api_key">Google Gemini API Key</label>
+                        <input type="password" id="google_gemini_api_key" name="google_gemini_api_key" value="{{ settings.text_ai.google_gemini }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="cohere_api_key">Cohere API Key</label>
+                        <input type="password" id="cohere_api_key" name="cohere_api_key" value="{{ settings.text_ai.cohere }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="mistral_api_key">Mistral API Key</label>
+                        <input type="password" id="mistral_api_key" name="mistral_api_key" value="{{ settings.text_ai.mistral }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="groq_api_key">Groq API Key</label>
+                        <input type="password" id="groq_api_key" name="groq_api_key" value="{{ settings.text_ai.groq }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="xai_api_key">xAI API Key</label>
+                        <input type="password" id="xai_api_key" name="xai_api_key" value="{{ settings.text_ai.xai }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="perplexity_api_key">Perplexity API Key</label>
+                        <input type="password" id="perplexity_api_key" name="perplexity_api_key" value="{{ settings.text_ai.perplexity }}">
+                    </div>
+                </div>
+                <p class="note">Only DeepSeek is currently used by this app. Others are saved for future integrations.</p>
+            </div>
+
+            <div class="card">
+                <h2>Image AI Providers</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="deepai_api_key">DeepAI API Key</label>
+                        <input type="password" id="deepai_api_key" name="deepai_api_key" value="{{ settings.image_ai.deepai }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="openai_image_api_key">OpenAI Image API Key (DALL-E)</label>
+                        <input type="password" id="openai_image_api_key" name="openai_image_api_key" value="{{ settings.image_ai.openai_image }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="stability_api_key">Stability AI API Key</label>
+                        <input type="password" id="stability_api_key" name="stability_api_key" value="{{ settings.image_ai.stability_ai }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="replicate_api_key">Replicate API Key</label>
+                        <input type="password" id="replicate_api_key" name="replicate_api_key" value="{{ settings.image_ai.replicate }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="leonardo_api_key">Leonardo API Key</label>
+                        <input type="password" id="leonardo_api_key" name="leonardo_api_key" value="{{ settings.image_ai.leonardo }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="midjourney_api_key">Midjourney API Key</label>
+                        <input type="password" id="midjourney_api_key" name="midjourney_api_key" value="{{ settings.image_ai.midjourney }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="ideogram_api_key">Ideogram API Key</label>
+                        <input type="password" id="ideogram_api_key" name="ideogram_api_key" value="{{ settings.image_ai.ideogram }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="flux_api_key">Flux API Key</label>
+                        <input type="password" id="flux_api_key" name="flux_api_key" value="{{ settings.image_ai.flux }}">
+                    </div>
+                </div>
+                <p class="note">Only DeepAI is currently used by this app. Others are saved for future integrations.</p>
+            </div>
+
+            <button class="btn" type="submit">Save Settings</button>
+        </form>
+
+        <!-- Footer -->
+        <footer style="text-align: center; padding: 30px 20px; margin-top: 40px; color: rgba(255,255,255,0.8); font-size: 14px;">
+            <p style="margin-bottom: 10px;">
+                <strong>Social Media Converter</strong> by 
+                <a href="https://joshuagoth.com" target="_blank" style="color: white; text-decoration: underline;">Joshua Goth</a>
+            </p>
+            <p style="margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="https://github.com/JoshuaMGoth/blog-to-social-media-converter" target="_blank" style="color: rgba(255,255,255,0.9); text-decoration: none;">GitHub</a>
+                <a href="mailto:me@joshuagoth.com" style="color: rgba(255,255,255,0.9); text-decoration: none;">✉️ me@joshuagoth.com</a>
+                <a href="https://joshuagoth.com" target="_blank" style="color: rgba(255,255,255,0.9); text-decoration: none;">🌐 joshuagoth.com</a>
+            </p>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.6);">
+                Open source under the MIT License
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
